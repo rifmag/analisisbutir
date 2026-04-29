@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Dashboard Analisis Item — Multi Paket</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -284,8 +287,8 @@
         <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
           <span>Tabel Detail Item <span id="filter-info" style="color:var(--accent);font-size:.63rem;"></span></span>
           <div style="display:flex;gap:.4rem">
-            <button onclick="downloadCSV()" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:.22rem .7rem;border-radius:5px;cursor:pointer;font-size:.6rem;font-family:'DM Mono',monospace;transition:all .15s" onmouseover="this.style.borderColor='#60a5fa';this.style.color='#60a5fa'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'" title="Download semua paket — tiap paket jadi file CSV terpisah">⬇ CSV</button>
-            <button onclick="downloadExcel()" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:.22rem .7rem;border-radius:5px;cursor:pointer;font-size:.6rem;font-family:'DM Mono',monospace;transition:all .15s" onmouseover="this.style.borderColor='#4ade80';this.style.color='#4ade80'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'" title="Download semua paket dalam 1 file Excel multi-sheet">⬇ Excel</button>
+            <button onclick="downloadCSV()" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:.22rem .7rem;border-radius:5px;cursor:pointer;font-size:.6rem;font-family:'DM Mono',monospace;transition:all .15s" onmouseover="this.style.borderColor='#60a5fa';this.style.color='#60a5fa'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">⬇ CSV</button>
+            <button onclick="downloadExcel()" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:.22rem .7rem;border-radius:5px;cursor:pointer;font-size:.6rem;font-family:'DM Mono',monospace;transition:all .15s" onmouseover="this.style.borderColor='#4ade80';this.style.color='#4ade80'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">⬇ Excel</button>
           </div>
         </div>
         <div class="table-wrap">
@@ -1204,142 +1207,65 @@ function resetDashboard(){
 // ============================================================
 // DOWNLOAD
 // ============================================================
-// Build row array for a given paket (all items, no filter)
-function buildRowsForPaket(p) {
+function getTableRows() {
+  const p = pakets[activeTab];
   const mPSD = p.measurePSD || 1;
-  return p.items.map(d => {
+  let rows = curFilter === 'all' ? p.items : p.items.filter(d => d.fit === curFilter);
+  if (curDaya !== 'all') rows = rows.filter(d => d.dayaBeda === curDaya);
+  return rows.map(d => {
     const diffK  = getDiffKat(d.measure, mPSD);
     const prob   = getPengecohLebihTinggi(p.pengecohMap, d.item, d.code);
     const probStr = prob.length > 0 ? prob.map(o => o.opt + '(' + o.ptma.toFixed(2) + ')').join('; ') : '';
-    const ptmaCorr = (()=>{
-      let o2 = p.pengecohMap[d.item]||p.pengecohMap[d.code]||p.pengecohMap[parseInt(d.code)];
-      if(!o2||!o2.length) return '';
-      let sorted = [...o2].sort((a,b)=>String(a.opt).localeCompare(String(b.opt),undefined,{numeric:true}));
-      return sorted.map(o=>o.opt+':'+(o.ptma!==null?o.ptma.toFixed(2):'—')+(o.score_val===1?' v':'')).join(' | ');
-    })();
     return {
-      'No'                : d.item,
-      'Kode Item'         : d.code,
-      'Measure'           : parseFloat(d.measure.toFixed(2)),
-      'P.SD Measure'      : parseFloat(mPSD.toFixed(2)),
-      'Kesukaran'         : diffK.label,
-      'IN MNSQ'           : parseFloat(d.in_mnsq.toFixed(2)),
-      'OUT MNSQ'          : parseFloat(d.out_mnsq.toFixed(2)),
-      'PTMEASUR Corr'     : parseFloat(d.tmeas.toFixed(2)),
+      'No'              : d.item,
+      'Kode Item'       : d.code,
+      'Measure'         : d.measure.toFixed(2),
+      'P.SD Measure'    : mPSD.toFixed(2),
+      'Kesukaran'       : diffK.label,
+      'IN MNSQ'         : d.in_mnsq.toFixed(2),
+      'OUT MNSQ'        : d.out_mnsq.toFixed(2),
+      'PTMEASUR Corr'   : d.tmeas.toFixed(2),
       'Kategori Daya Beda': d.dayaBeda,
-      'Kunci Jawaban'     : d.kunci !== null ? d.kunci : '',
-      'PTMA CORR Pilihan' : ptmaCorr,
-      'Pengecoh > Kunci'  : probStr,
-      'Status Fit'        : d.fit,
+      'Kunci Jawaban'   : d.kunci !== null ? d.kunci : '',
+      'PTMA CORR Pilihan': (()=>{ let o2=p.pengecohMap[d.item]||p.pengecohMap[d.code]||p.pengecohMap[parseInt(d.code)]; if(!o2||!o2.length) return ''; let sorted=[...o2].sort((a,b)=>String(a.opt).localeCompare(String(b.opt),undefined,{numeric:true})); return sorted.map(o=>o.opt+':'+(o.ptma!==null?o.ptma.toFixed(2):'—')+(o.score_val===1?' ✓':'')).join(' | '); })(),
+      'Pengecoh > Kunci': probStr,
+      'Status Fit'      : d.fit,
     };
   });
 }
 
-// Legacy — used internally if needed for filtered view
-function getTableRows() {
-  const p = pakets[activeTab];
-  return buildRowsForPaket(p);
-}
-
-// ── Download CSV: satu file per paket, semua paket ──
 function downloadCSV() {
-  const aktivePakets = pakets.filter(p => p && p.items && p.items.length);
-  if (!aktivePakets.length) return;
+  const rows = getTableRows();
+  if (!rows.length) return;
+  const headers = Object.keys(rows[0]);
   const esc = v => '"' + String(v).replace(/"/g, '""') + '"';
-
-  if (aktivePakets.length === 1) {
-    // Single paket — download langsung
-    const rows = buildRowsForPaket(aktivePakets[0]);
-    const headers = Object.keys(rows[0]);
-    const csv = [headers.map(esc).join(','), ...rows.map(r => headers.map(h => esc(r[h])).join(','))].join('\n');
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
-    a.download = (aktivePakets[0].label||'Paket_1') + '_detail_item.csv';
-    a.click();
-  } else {
-    // Multi paket — download satu per satu berselang 400ms
-    aktivePakets.forEach((p, i) => {
-      setTimeout(() => {
-        const rows = buildRowsForPaket(p);
-        const headers = Object.keys(rows[0]);
-        const csv = [headers.map(esc).join(','), ...rows.map(r => headers.map(h => esc(r[h])).join(','))].join('\n');
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
-        a.download = (p.label||('Paket_'+(i+1))) + '_detail_item.csv';
-        a.click();
-      }, i * 400);
-    });
-  }
+  const csv = [headers.map(esc).join(','), ...rows.map(r => headers.map(h => esc(r[h])).join(','))].join('\n');
+  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (pakets[activeTab]?.label || 'paket') + '_detail_item.csv';
+  a.click();
 }
 
-// ── Download Excel: SATU file, tiap paket = 1 sheet ──
 function downloadExcel() {
-  const aktivePakets = pakets.filter(p => p && p.items && p.items.length);
-  if (!aktivePakets.length) return;
-
-  const wb = XLSX.utils.book_new();
-
-  // Header style helper (SheetJS CE supports limited styling via !cols / !rows)
-  const COLS = [
-    {wch:5},{wch:12},{wch:9},{wch:11},{wch:12},
-    {wch:9},{wch:10},{wch:13},{wch:20},{wch:7},
-    {wch:28},{wch:20},{wch:12}
-  ];
-
-  aktivePakets.forEach((p, i) => {
-    const rows = buildRowsForPaket(p);
-    if (!rows.length) return;
-
-    // Build aoa (array of arrays) — header + data rows
-    const headers = Object.keys(rows[0]);
-    const aoa = [
-      headers, // header row
-      ...rows.map(r => headers.map(h => r[h]))
-    ];
-
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws['!cols'] = COLS;
-
-    // Freeze top row
-    ws['!freeze'] = {xSplit:0, ySplit:1, topLeftCell:'A2', activePane:'bottomLeft', state:'frozen'};
-
-    // Sheet name: maks 31 char (Excel limit)
-    const sheetName = (p.label || ('Paket '+(i+1))).substring(0, 31);
-    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  const rows = getTableRows();
+  if (!rows.length) return;
+  const headers = Object.keys(rows[0]);
+  // Build HTML table that Excel can open
+  let html = '<html><head><meta charset="UTF-8"></head><body><table><thead><tr>';
+  headers.forEach(h => { html += `<th style="background:#1c2030;color:#e8ecf4;font-weight:bold">${h}</th>`; });
+  html += '</tr></thead><tbody>';
+  rows.forEach(r => {
+    html += '<tr>';
+    headers.forEach(h => { html += `<td>${r[h]}</td>`; });
+    html += '</tr>';
   });
-
-  // Tambah sheet Ringkasan jika > 1 paket
-  if (aktivePakets.length > 1) {
-    const ringkasanData = [
-      ['Paket', 'Jumlah Soal', 'Sempurna', 'Sangat Baik', 'Baik', 'Tdk Dpt Mbedakan', 'Butuh Pemeriksaan', 'Fit Baik', 'Borderline', 'Misfit', '% Minimal Baik'],
-    ];
-    aktivePakets.forEach((p, i) => {
-      const c = {'Sempurna':0,'Sangat Baik':0,'Baik':0,'Tidak Dapat Membedakan':0,'Butuh Pemeriksaan':0};
-      const f = {'Fit Baik':0,'Borderline':0,'Misfit':0};
-      p.items.forEach(d => {
-        if(c[d.dayaBeda]!==undefined) c[d.dayaBeda]++;
-        if(f[d.fit]!==undefined) f[d.fit]++;
-      });
-      const total = p.items.length;
-      const baik = c['Sempurna']+c['Sangat Baik']+c['Baik'];
-      const pct = total > 0 ? parseFloat((baik/total*100).toFixed(1)) : 0;
-      ringkasanData.push([
-        p.label||('Paket '+(i+1)), total,
-        c['Sempurna'], c['Sangat Baik'], c['Baik'],
-        c['Tidak Dapat Membedakan'], c['Butuh Pemeriksaan'],
-        f['Fit Baik'], f['Borderline'], f['Misfit'], pct
-      ]);
-    });
-    const wsR = XLSX.utils.aoa_to_sheet(ringkasanData);
-    wsR['!cols'] = [{wch:20},{wch:12},{wch:10},{wch:12},{wch:8},{wch:18},{wch:18},{wch:10},{wch:12},{wch:8},{wch:14}];
-    XLSX.utils.book_append_sheet(wb, wsR, 'Ringkasan');
-  }
-
-  const filename = aktivePakets.length > 1
-    ? 'Analisis_MultiPaket_' + aktivePakets.length + 'Paket.xlsx'
-    : (aktivePakets[0].label||'Paket_1') + '_detail_item.xlsx';
-
-  XLSX.writeFile(wb, filename);
+  html += '</tbody></table></body></html>';
+  const blob = new Blob([html], {type: 'application/vnd.ms-excel;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (pakets[activeTab]?.label || 'paket') + '_detail_item.xls';
+  a.click();
 }
 
 // INIT
@@ -1347,4 +1273,3 @@ buildSlots();
 </script>
 </body>
 </html>
-
