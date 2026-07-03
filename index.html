@@ -3,9 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <title>Dashboard Analisis Item — Multi Paket</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -137,6 +134,8 @@
   .badge-c{background:rgba(251,146,60,.15);color:#fb923c;}
   .badge-tb{background:rgba(107,116,148,.15);color:#6b7494;}
   .badge-bp{background:rgba(248,113,113,.18);color:var(--misfit);}
+  .badge-bagus{background:rgba(74,222,128,.15);color:var(--fit);}
+  .badge-tidakbagus{background:rgba(248,113,113,.18);color:var(--misfit);}
 
   /* Sidebar */
   .filter-section{padding:.95rem 1.15rem;border-bottom:1px solid var(--border);}
@@ -146,8 +145,9 @@
   .filter-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(96,165,250,.06);}
   .filter-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(96,165,250,.06);}
   .filter-btn.active-fit{border-color:var(--fit)!important;color:var(--fit)!important;background:rgba(74,222,128,.06)!important;}
-  .filter-btn.active-borderline{border-color:var(--borderline)!important;color:var(--borderline)!important;background:rgba(250,204,21,.06)!important;}
   .filter-btn.active-misfit{border-color:var(--misfit)!important;color:var(--misfit)!important;background:rgba(248,113,113,.06)!important;}
+  .filter-btn.active-bagus{border-color:var(--fit)!important;color:var(--fit)!important;background:rgba(74,222,128,.06)!important;}
+  .filter-btn.active-tidakbagus{border-color:var(--misfit)!important;color:var(--misfit)!important;background:rgba(248,113,113,.06)!important;}
 
   /* Donut */
   .donut-wrap{padding:.95rem 1.15rem;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;}
@@ -193,7 +193,7 @@
 <!-- ===== UPLOAD SCREEN ===== -->
 <div id="upload-screen">
   <div class="upload-logo"><span class="upload-logo-inner">Analisis Item &nbsp;·&nbsp; Rasch Model &nbsp;·&nbsp; Multi Paket &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Analisis Item &nbsp;·&nbsp; Rasch Model &nbsp;·&nbsp; Multi Paket &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Analisis Item &nbsp;·&nbsp; Rasch Model &nbsp;·&nbsp; Multi Paket &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
-  <div class="upload-title">Dashboard <span>Daya Beda</span><br>& Efektivitas Pengecoh</div>
+  <div class="upload-title">Dashboard <span>Kualitas Soal</span><br>Tim Pengelolaan Tes & Sertifikasi Non JF</div>
   <p class="upload-sub">Dukung <b style="color:var(--text)">file Winsteps (.txt)</b> dan <b style="color:var(--text)">Excel (.xlsx)</b>. Upload hingga 6 paket sekaligus.</p>
 
   <!-- Format hint toggle -->
@@ -253,7 +253,6 @@
         <div class="section-title">Peta Item — Measure vs Daya Beda (PTMEASUR Corr)</div>
         <div class="legend">
           <div class="legend-item"><div class="legend-dot" style="background:var(--fit)"></div>Fit Baik</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--borderline)"></div>Borderline</div>
           <div class="legend-item"><div class="legend-dot" style="background:var(--misfit)"></div>Misfit</div>
         </div>
         <svg id="scatter" width="100%" height="255" viewBox="0 0 680 255"></svg>
@@ -272,12 +271,12 @@
           <span>Perbandingan Kualitas Antar Paket</span>
           <div style="display:flex;gap:3px">
             <button id="cmp-btn-fit" onclick="setCmpMode('fit')" style="font-family:'DM Mono',monospace;font-size:.58rem;padding:.18rem .55rem;border-radius:4px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:#0d1117;transition:all .15s">Status Fit</button>
+            <button id="cmp-btn-kualitas" onclick="setCmpMode('kualitas')" style="font-family:'DM Mono',monospace;font-size:.58rem;padding:.18rem .55rem;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s">Kualitas Soal</button>
             <button id="cmp-btn-daya" onclick="setCmpMode('daya')" style="font-family:'DM Mono',monospace;font-size:.58rem;padding:.18rem .55rem;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s">Daya Beda</button>
           </div>
         </div>
         <div class="compare-legend" id="compare-legend">
           <div class="compare-leg-item"><div class="compare-leg-dot" style="background:#4ade8088"></div>Fit Baik</div>
-          <div class="compare-leg-item"><div class="compare-leg-dot" style="background:#facc1588"></div>Borderline</div>
           <div class="compare-leg-item"><div class="compare-leg-dot" style="background:#f8717188"></div>Misfit</div>
         </div>
         <div class="compare-grid" id="compare-grid"></div>
@@ -287,8 +286,8 @@
         <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
           <span>Tabel Detail Item <span id="filter-info" style="color:var(--accent);font-size:.63rem;"></span></span>
           <div style="display:flex;gap:.4rem">
-            <button onclick="downloadCSV()" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:.22rem .7rem;border-radius:5px;cursor:pointer;font-size:.6rem;font-family:'DM Mono',monospace;transition:all .15s" onmouseover="this.style.borderColor='#60a5fa';this.style.color='#60a5fa'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">⬇ CSV</button>
-            <button onclick="downloadExcel()" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:.22rem .7rem;border-radius:5px;cursor:pointer;font-size:.6rem;font-family:'DM Mono',monospace;transition:all .15s" onmouseover="this.style.borderColor='#4ade80';this.style.color='#4ade80'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">⬇ Excel</button>
+            <button onclick="downloadCSV()" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:.22rem .7rem;border-radius:5px;cursor:pointer;font-size:.6rem;font-family:'DM Mono',monospace;transition:all .15s" onmouseover="this.style.borderColor='#60a5fa';this.style.color='#60a5fa'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'" title="Download semua paket — tiap paket jadi file CSV terpisah">⬇ CSV</button>
+            <button onclick="downloadExcel()" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:.22rem .7rem;border-radius:5px;cursor:pointer;font-size:.6rem;font-family:'DM Mono',monospace;transition:all .15s" onmouseover="this.style.borderColor='#4ade80';this.style.color='#4ade80'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'" title="Download semua paket dalam 1 file Excel multi-sheet">⬇ Excel</button>
           </div>
         </div>
         <div class="table-wrap">
@@ -297,7 +296,7 @@
               <tr>
                 <th>#</th><th>Kode Item</th><th>Measure</th><th>Kesukaran</th>
                 <th>IN MNSQ</th><th>OUT MNSQ</th><th>PTMEASUR</th>
-                <th>Kategori Daya Beda</th><th>Kunci</th><th>PTMA CORR Pilihan</th><th>Pengecoh &gt; Kunci (PTMA)</th><th>Status Fit</th>
+                <th>Kategori Daya Beda</th><th>Kunci</th><th>PTMA CORR Pilihan</th><th>Pengecoh &gt; Kunci (PTMA)</th><th>Status Fit</th><th>Kualitas Soal</th>
               </tr>
             </thead>
             <tbody id="table-body"></tbody>
@@ -314,8 +313,15 @@
         <div class="filter-btns" id="fitFilterBtns">
           <button class="filter-btn active" onclick="setFilter('all',this)">Semua</button>
           <button class="filter-btn" onclick="setFilter('Fit Baik',this)">✓ Fit Baik</button>
-          <button class="filter-btn" onclick="setFilter('Borderline',this)">⚠ Borderline</button>
           <button class="filter-btn" onclick="setFilter('Misfit',this)">✗ Misfit</button>
+        </div>
+        <div style="margin-top:.65rem">
+          <div class="filter-label" style="margin-bottom:.4rem">Filter Kualitas Soal</div>
+          <div class="filter-btns" id="kualitasFilterBtns">
+            <button class="filter-btn active" onclick="setKualitasFilter('all',this)">Semua</button>
+            <button class="filter-btn" onclick="setKualitasFilter('Soal Bagus',this)">✓ Soal Bagus</button>
+            <button class="filter-btn" onclick="setKualitasFilter('Soal Tidak Bagus',this)">✗ Tidak Bagus</button>
+          </div>
         </div>
         <div style="margin-top:.65rem">
           <div class="filter-label" style="margin-bottom:.4rem">Filter Daya Beda</div>
@@ -334,6 +340,13 @@
         <div class="section-title" style="align-self:flex-start;margin-bottom:.62rem;">Distribusi Status Fit</div>
         <svg id="donut" width="120" height="120" viewBox="0 0 120 120"></svg>
         <div class="donut-legend" id="donut-legend"></div>
+      </div>
+
+      <div class="donut-wrap">
+        <div class="section-title" style="align-self:flex-start;margin-bottom:.62rem;">Distribusi Kualitas Soal</div>
+        <div class="chart-hint" style="margin-top:-.4rem;margin-bottom:.5rem;">Kriteria: Infit (0,5–1,5) &amp; Outfit (0,5–1,5) — atau — Infit (0,5–1,5) &amp; Ptmea Corr (&gt; 0,2)</div>
+        <svg id="donut3" width="120" height="120" viewBox="0 0 120 120"></svg>
+        <div class="donut-legend" id="donut3-legend"></div>
       </div>
 
       <div class="donut-wrap">
@@ -360,13 +373,15 @@
 const MAX_SLOTS = 6;
 const SLOT_COLORS = ['#60a5fa','#4ade80','#facc15','#fb923c','#a78bfa','#f87171'];
 const OPT_LABELS  = ['A','B','C','D'];
-const FIT_COLOR   = {'Fit Baik':'#4ade80','Borderline':'#facc15','Misfit':'#f87171'};
+const FIT_COLOR   = {'Fit Baik':'#4ade80','Misfit':'#f87171'};
+const KUALITAS_COLOR = {'Soal Bagus':'#4ade80','Soal Tidak Bagus':'#f87171'};
 
 let slotFiles  = new Array(MAX_SLOTS).fill(null); // {name, type:'txt'|'xlsx', raw}
 let pakets     = [];
 let activeTab  = 0;
 let curFilter  = 'all';
 let curDaya    = 'all';
+let curKualitas= 'all';
 
 // ============================================================
 // UTILS
@@ -390,12 +405,24 @@ function getDayaClass(c) {
   if(c==='Butuh Pemeriksaan')      return 'badge-bp';
   return '';
 }
+// Status Fit — disederhanakan menjadi 2 kriteria: Fit Baik & Misfit
+// Fit Baik jika IN MNSQ dan OUT MNSQ berada pada rentang 0.5 s.d. 1.5
 function calcFit(in_mnsq, out_mnsq, tmeas) {
-  if(in_mnsq>1.5||out_mnsq>1.5) return 'Misfit';
-  if((in_mnsq>=0.5&&in_mnsq<0.7)||(in_mnsq>1.3&&in_mnsq<=1.5)||
-     (out_mnsq>=0.5&&out_mnsq<0.7)||(out_mnsq>1.3&&out_mnsq<=1.5)||
-     out_mnsq<0.5||(tmeas!==null&&tmeas<0.2)) return 'Borderline';
-  return 'Fit Baik';
+  if(in_mnsq>=0.5 && in_mnsq<=1.5 && out_mnsq>=0.5 && out_mnsq<=1.5) return 'Fit Baik';
+  return 'Misfit';
+}
+// Kualitas Soal — menu tambahan untuk menentukan soal bagus/tidak bagus
+// Soal Bagus jika memenuhi salah satu dari 2 kombinasi kriteria berikut:
+//   Kombinasi 1: Infit (0,5 s.d. 1,5)  DAN  Outfit (0,5 s.d. 1,5)
+//   Kombinasi 2: Infit (0,5 s.d. 1,5)  DAN  Ptmea Corr (> 0,2)
+// (secara matematis = Infit wajib OK, DITAMBAH salah satu dari Outfit OK atau Ptmea Corr > 0,2)
+function calcKualitas(in_mnsq, out_mnsq, tmeas) {
+  const infitOk  = in_mnsq!==null && in_mnsq!==undefined && !isNaN(in_mnsq) && in_mnsq>=0.5 && in_mnsq<=1.5;
+  const outfitOk = out_mnsq!==null && out_mnsq!==undefined && !isNaN(out_mnsq) && out_mnsq>=0.5 && out_mnsq<=1.5;
+  const ptmaOk   = tmeas!==null && tmeas!==undefined && !isNaN(tmeas) && tmeas>0.2;
+  const kombinasi1 = infitOk && outfitOk;
+  const kombinasi2 = infitOk && ptmaOk;
+  return (kombinasi1 || kombinasi2) ? 'Soal Bagus' : 'Soal Tidak Bagus';
 }
 // Kategorisasi kesukaran berbasis P.SD Measure
 // Sukar: measure > P.SD | Sedang: -P.SD <= measure <= P.SD | Mudah: measure < -P.SD
@@ -457,7 +484,7 @@ function parseTxt(content, label) {
         score: isNaN(score)?0:score, count: isNaN(count)?0:count,
         measure, se: 0,
         in_mnsq: 0, out_mnsq: 0, tmeas: 0,
-        fit: 'Misfit', dayaBeda: 'Butuh Pemeriksaan',
+        fit: 'Misfit', dayaBeda: 'Butuh Pemeriksaan', kualitas: 'Soal Tidak Bagus',
         kunci: null, extreme: true, extremeType
       });
       continue;
@@ -501,6 +528,7 @@ function parseTxt(content, label) {
       score, count, measure, se: isNaN(se) ? 0 : se,
       in_mnsq: im, out_mnsq: om, tmeas: tm,
       fit: calcFit(im, om, tm),
+      kualitas: calcKualitas(im, om, tm),
       dayaBeda: getDayaBeda(tm),
       kunci: null
     });
@@ -627,7 +655,7 @@ function parseXlsx(wb, label) {
     items.push({
       item:items.length+1, code:String(code), score, count, measure, se:se||0,
       in_mnsq:im, out_mnsq:om, tmeas:tm||0,
-      fit:calcFit(im,om,tm), dayaBeda:getDayaBeda(tm),
+      fit:calcFit(im,om,tm), kualitas:calcKualitas(im,om,tm), dayaBeda:getDayaBeda(tm),
       kunci:kunci!==null?kunci:null
     });
   }
@@ -777,9 +805,9 @@ function switchTab(idx){
 // ============================================================
 function renderAll(){
   const p=pakets[activeTab];
-  renderStats(p); renderDonut(p); renderDonut2(p);
+  renderStats(p); renderDonut(p); renderDonut2(p); renderDonut3(p);
   renderScatter(p,curFilter); renderBar(p);
-  renderTable(p,curFilter,curDaya); renderCompare();
+  renderTable(p,curFilter,curDaya,curKualitas); renderCompare();
   document.getElementById('detail-placeholder').style.display='block';
   document.getElementById('detail-content').style.display='none';
 }
@@ -788,18 +816,21 @@ function renderAll(){
 // STATS
 // ============================================================
 function renderStats(p){
-  const fc={'Fit Baik':0,'Borderline':0,'Misfit':0};
-  p.items.forEach(d=>fc[d.fit]++);
+  const fc={'Fit Baik':0,'Misfit':0};
+  const qc={'Soal Bagus':0,'Soal Tidak Bagus':0};
+  p.items.forEach(d=>{fc[d.fit]++; qc[d.kualitas]++;});
   const n=p.items.length;
   const pct=n?((fc['Fit Baik']/n)*100).toFixed(0):'0';
+  const pctQ=n?((qc['Soal Bagus']/n)*100).toFixed(0):'0';
   const avgM=n?(p.items.reduce((s,d)=>s+d.measure,0)/n).toFixed(2):'—';
   const avgT=n?(p.items.reduce((s,d)=>s+(d.tmeas||0),0)/n).toFixed(2):'—';
   const cards=[
     {label:'Total Item',value:n,sub:'Jumlah soal',color:'#60a5fa'},
     {label:'Peserta',value:p.items[0]?.count||'—',sub:'Jumlah peserta',color:'#a78bfa'},
     {label:'Fit Baik',value:fc['Fit Baik'],sub:`${pct}% dari total`,color:'#4ade80'},
-    {label:'Borderline',value:fc['Borderline'],sub:'Perlu review',color:'#facc15'},
     {label:'Misfit',value:fc['Misfit'],sub:'Perlu diperbaiki',color:'#f87171'},
+    {label:'Soal Bagus',value:qc['Soal Bagus'],sub:`${pctQ}% dari total`,color:'#4ade80'},
+    {label:'Soal Tidak Bagus',value:qc['Soal Tidak Bagus'],sub:'PM Corr / MNSQ di luar batas',color:'#f87171'},
     {label:'Avg. Measure',value:avgM,sub:'Tingkat kesukaran',color:'#a78bfa'},
     {label:'Avg. Daya Beda',value:avgT,sub:'PTMEASUR Corr',color:'#fb923c'},
   ];
@@ -840,12 +871,19 @@ function drawDonut(svgId,legId,data,total){
     </div>`).join('');
 }
 function renderDonut(p){
-  const fc={'Fit Baik':0,'Borderline':0,'Misfit':0};
+  const fc={'Fit Baik':0,'Misfit':0};
   p.items.forEach(d=>fc[d.fit]++);
   drawDonut('donut','donut-legend',[
     {label:'Fit Baik',count:fc['Fit Baik'],color:'#4ade80'},
-    {label:'Borderline',count:fc['Borderline'],color:'#facc15'},
     {label:'Misfit',count:fc['Misfit'],color:'#f87171'},
+  ],p.items.length);
+}
+function renderDonut3(p){
+  const qc={'Soal Bagus':0,'Soal Tidak Bagus':0};
+  p.items.forEach(d=>qc[d.kualitas]++);
+  drawDonut('donut3','donut3-legend',[
+    {label:'Soal Bagus',count:qc['Soal Bagus'],color:'#4ade80'},
+    {label:'Soal Tidak Bagus',count:qc['Soal Tidak Bagus'],color:'#f87171'},
   ],p.items.length);
 }
 function renderDonut2(p){
@@ -961,15 +999,16 @@ let cmpMode = 'fit';
 
 function setCmpMode(mode) {
   cmpMode = mode;
-  const btnFit  = document.getElementById('cmp-btn-fit');
-  const btnDaya = document.getElementById('cmp-btn-daya');
-  if (mode === 'fit') {
-    btnFit.style.background  = 'var(--accent)'; btnFit.style.color  = '#0d1117'; btnFit.style.borderColor  = 'var(--accent)';
-    btnDaya.style.background = 'transparent';   btnDaya.style.color = 'var(--muted)'; btnDaya.style.borderColor = 'var(--border)';
-  } else {
-    btnDaya.style.background = 'var(--accent)'; btnDaya.style.color = '#0d1117'; btnDaya.style.borderColor = 'var(--accent)';
-    btnFit.style.background  = 'transparent';   btnFit.style.color  = 'var(--muted)'; btnFit.style.borderColor  = 'var(--border)';
-  }
+  const btns = {
+    fit:      document.getElementById('cmp-btn-fit'),
+    kualitas: document.getElementById('cmp-btn-kualitas'),
+    daya:     document.getElementById('cmp-btn-daya'),
+  };
+  Object.keys(btns).forEach(k=>{
+    const b = btns[k];
+    if (k === mode) { b.style.background='var(--accent)'; b.style.color='#0d1117'; b.style.borderColor='var(--accent)'; }
+    else { b.style.background='transparent'; b.style.color='var(--muted)'; b.style.borderColor='var(--border)'; }
+  });
   renderCompare();
 }
 
@@ -984,23 +1023,43 @@ function renderCompare(){
     // ── Status Fit ──
     legend.innerHTML = `
       <div class='compare-leg-item'><div class='compare-leg-dot' style='background:#4ade8088'></div>Fit Baik</div>
-      <div class='compare-leg-item'><div class='compare-leg-dot' style='background:#facc1588'></div>Borderline</div>
       <div class='compare-leg-item'><div class='compare-leg-dot' style='background:#f8717188'></div>Misfit</div>`;
 
     document.getElementById('compare-grid').innerHTML = pakets.map((p, i) => {
-      const fc = {'Fit Baik':0, 'Borderline':0, 'Misfit':0};
+      const fc = {'Fit Baik':0, 'Misfit':0};
       p.items.forEach(d => fc[d.fit]++);
       const n   = p.items.length;
       const fw  = (fc['Fit Baik']  / n * 100).toFixed(0);
-      const bw  = (fc['Borderline']/ n * 100).toFixed(0);
       const mw  = (fc['Misfit']    / n * 100).toFixed(0);
       const col = SLOT_COLORS[i];
       return `<div class='compare-row'>
         <div class='compare-label' style='color:${col}' title='${p.label}'>${p.label}</div>
         <div class='compare-bars'>
           ${fc['Fit Baik']  >0?`<div class='compare-seg' style='width:${fw}%;background:#4ade8088' title='Fit Baik ${fw}%'>${fw}%</div>`:''}
-          ${fc['Borderline']>0?`<div class='compare-seg' style='width:${bw}%;background:#facc1588' title='Borderline ${bw}%'>${bw}%</div>`:''}
           ${fc['Misfit']    >0?`<div class='compare-seg' style='width:${mw}%;background:#f8717188' title='Misfit ${mw}%'>${mw}%</div>`:''}
+        </div>
+        <span style='font-size:.6rem;color:var(--muted);min-width:32px;text-align:right'>${n} soal</span>
+      </div>`;
+    }).join('');
+
+  } else if (cmpMode === 'kualitas') {
+    // ── Kualitas Soal ──
+    legend.innerHTML = `
+      <div class='compare-leg-item'><div class='compare-leg-dot' style='background:#4ade8088'></div>Soal Bagus</div>
+      <div class='compare-leg-item'><div class='compare-leg-dot' style='background:#f8717188'></div>Soal Tidak Bagus</div>`;
+
+    document.getElementById('compare-grid').innerHTML = pakets.map((p, i) => {
+      const qc = {'Soal Bagus':0, 'Soal Tidak Bagus':0};
+      p.items.forEach(d => qc[d.kualitas]++);
+      const n   = p.items.length;
+      const gw  = (qc['Soal Bagus']       / n * 100).toFixed(0);
+      const bw  = (qc['Soal Tidak Bagus'] / n * 100).toFixed(0);
+      const col = SLOT_COLORS[i];
+      return `<div class='compare-row'>
+        <div class='compare-label' style='color:${col}' title='${p.label}'>${p.label}</div>
+        <div class='compare-bars'>
+          ${qc['Soal Bagus']      >0?`<div class='compare-seg' style='width:${gw}%;background:#4ade8088' title='Soal Bagus ${gw}%'>${gw}%</div>`:''}
+          ${qc['Soal Tidak Bagus']>0?`<div class='compare-seg' style='width:${bw}%;background:#f8717188' title='Soal Tidak Bagus ${bw}%'>${bw}%</div>`:''}
         </div>
         <span style='font-size:.6rem;color:var(--muted);min-width:32px;text-align:right'>${n} soal</span>
       </div>`;
@@ -1054,11 +1113,13 @@ function getPengecohLebihTinggi(pengecohMap, itemNum, itemCode) {
   const kunciPtma = kunci.ptma;
   return opts.filter(o => o.score_val !== 1 && o.ptma !== null && o.ptma !== undefined && o.ptma > kunciPtma);
 }
-function renderTable(p,filter,daya){
+function renderTable(p,filter,daya,kualitas){
+  kualitas = kualitas || 'all';
   const nonExt2 = p.items.filter(d=>!d.extreme);
   let rows=filter==='all'?nonExt2:nonExt2.filter(d=>d.fit===filter);
   if(daya!=='all') rows=rows.filter(d=>d.dayaBeda===daya);
-  document.getElementById('filter-info').textContent=(filter!=='all'||daya!=='all')?`(${rows.length} item)`:'';
+  if(kualitas!=='all') rows=rows.filter(d=>d.kualitas===kualitas);
+  document.getElementById('filter-info').textContent=(filter!=='all'||daya!=='all'||kualitas!=='all')?`(${rows.length} item)`:'';
   const mPSD = p.measurePSD || 1;
   document.getElementById('table-body').innerHTML=rows.map(d=>{
     const diffK = getDiffKat(d.measure, mPSD);
@@ -1092,7 +1153,8 @@ function renderTable(p,filter,daya){
         }).join('');
       })() }</td>
       <td>${probCell}</td>
-      <td><span class="badge badge-${d.fit==='Fit Baik'?'fit':d.fit==='Borderline'?'borderline':'misfit'}">${d.fit}</span></td>
+      <td><span class="badge badge-${d.fit==='Fit Baik'?'fit':'misfit'}">${d.fit}</span></td>
+      <td><span class="badge badge-${d.kualitas==='Soal Bagus'?'bagus':'tidakbagus'}">${d.kualitas}</span></td>
     </tr>`;}).join('');
 }
 
@@ -1144,7 +1206,8 @@ function showDetail(tabIdx,itemNum){
     <div class="detail-item-num">Soal #${d.item} — ${p.label}</div>
     <div class="detail-row"><span class="detail-key">Kode Item</span><span>${d.code}${d.extreme?` <span style="font-size:.58rem;background:rgba(248,113,113,.15);color:#f87171;border-radius:3px;padding:.05rem .3rem">${d.extremeType}</span>`:''}</span></div>
     ${d.extreme?`<div class="detail-row" style="background:rgba(248,113,113,.07);border-radius:4px;padding:.3rem .5rem;"><span class="detail-key" style="color:#f87171">⚠ Catatan</span><span style="color:#f87171;font-size:.6rem">Soal ini dijawab ${d.extremeType==='MAXIMUM MEASURE'?'benar oleh semua':'salah oleh semua'} peserta. Winsteps tidak dapat menghitung MNSQ dan PTMEASUR. Soal perlu ditinjau ulang.</span></div>`:''}
-    <div class="detail-row"><span class="detail-key">Status Fit</span><span><span class="badge badge-${d.fit==='Fit Baik'?'fit':d.fit==='Borderline'?'borderline':'misfit'}">${d.fit}</span></span></div>
+    <div class="detail-row"><span class="detail-key">Status Fit</span><span><span class="badge badge-${d.fit==='Fit Baik'?'fit':'misfit'}">${d.fit}</span></span></div>
+    <div class="detail-row"><span class="detail-key">Kualitas Soal</span><span><span class="badge badge-${d.kualitas==='Soal Bagus'?'bagus':'tidakbagus'}">${d.kualitas}</span></span></div>
     <div class="detail-row"><span class="detail-key">Daya Beda</span><span><span class="badge ${dc}">${d.dayaBeda}</span></span></div>
     <div class="detail-row"><span class="detail-key">Measure</span><span>${d.measure.toFixed(2)} logit</span></div>
     <div class="detail-row"><span class="detail-key" style="font-size:.56rem">P.SD Measure</span><span style="font-size:.58rem;color:var(--muted)">${dPSD.toFixed(2)} (batas ±)</span></div>
@@ -1164,19 +1227,26 @@ function showDetail(tabIdx,itemNum){
 // ============================================================
 function setFilter(val,btn){
   curFilter=val;
-  document.getElementById('fitFilterBtns').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active','active-fit','active-borderline','active-misfit'));
+  document.getElementById('fitFilterBtns').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active','active-fit','active-misfit'));
   btn.classList.add('active');
   if(val==='Fit Baik') btn.classList.add('active-fit');
-  if(val==='Borderline') btn.classList.add('active-borderline');
   if(val==='Misfit') btn.classList.add('active-misfit');
   renderScatter(pakets[activeTab],val);
-  renderTable(pakets[activeTab],val,curDaya);
+  renderTable(pakets[activeTab],val,curDaya,curKualitas);
+}
+function setKualitasFilter(val,btn){
+  curKualitas=val;
+  document.getElementById('kualitasFilterBtns').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active','active-bagus','active-tidakbagus'));
+  btn.classList.add('active');
+  if(val==='Soal Bagus') btn.classList.add('active-bagus');
+  if(val==='Soal Tidak Bagus') btn.classList.add('active-tidakbagus');
+  renderTable(pakets[activeTab],curFilter,curDaya,val);
 }
 function setDayaFilter(val,btn){
   curDaya=val;
   document.getElementById('dayaFilterBtns').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  renderTable(pakets[activeTab],curFilter,val);
+  renderTable(pakets[activeTab],curFilter,val,curKualitas);
 }
 
 // ============================================================
@@ -1207,65 +1277,146 @@ function resetDashboard(){
 // ============================================================
 // DOWNLOAD
 // ============================================================
-function getTableRows() {
-  const p = pakets[activeTab];
+// Build row array for a given paket (all items, no filter)
+function buildRowsForPaket(p) {
   const mPSD = p.measurePSD || 1;
-  let rows = curFilter === 'all' ? p.items : p.items.filter(d => d.fit === curFilter);
-  if (curDaya !== 'all') rows = rows.filter(d => d.dayaBeda === curDaya);
-  return rows.map(d => {
+  return p.items.map(d => {
     const diffK  = getDiffKat(d.measure, mPSD);
     const prob   = getPengecohLebihTinggi(p.pengecohMap, d.item, d.code);
     const probStr = prob.length > 0 ? prob.map(o => o.opt + '(' + o.ptma.toFixed(2) + ')').join('; ') : '';
+    const ptmaCorr = (()=>{
+      let o2 = p.pengecohMap[d.item]||p.pengecohMap[d.code]||p.pengecohMap[parseInt(d.code)];
+      if(!o2||!o2.length) return '';
+      let sorted = [...o2].sort((a,b)=>String(a.opt).localeCompare(String(b.opt),undefined,{numeric:true}));
+      return sorted.map(o=>o.opt+':'+(o.ptma!==null?o.ptma.toFixed(2):'—')+(o.score_val===1?' v':'')).join(' | ');
+    })();
     return {
-      'No'              : d.item,
-      'Kode Item'       : d.code,
-      'Measure'         : d.measure.toFixed(2),
-      'P.SD Measure'    : mPSD.toFixed(2),
-      'Kesukaran'       : diffK.label,
-      'IN MNSQ'         : d.in_mnsq.toFixed(2),
-      'OUT MNSQ'        : d.out_mnsq.toFixed(2),
-      'PTMEASUR Corr'   : d.tmeas.toFixed(2),
+      'No'                : d.item,
+      'Kode Item'         : d.code,
+      'Measure'           : parseFloat(d.measure.toFixed(2)),
+      'P.SD Measure'      : parseFloat(mPSD.toFixed(2)),
+      'Kesukaran'         : diffK.label,
+      'IN MNSQ'           : parseFloat(d.in_mnsq.toFixed(2)),
+      'OUT MNSQ'          : parseFloat(d.out_mnsq.toFixed(2)),
+      'PTMEASUR Corr'     : parseFloat(d.tmeas.toFixed(2)),
       'Kategori Daya Beda': d.dayaBeda,
-      'Kunci Jawaban'   : d.kunci !== null ? d.kunci : '',
-      'PTMA CORR Pilihan': (()=>{ let o2=p.pengecohMap[d.item]||p.pengecohMap[d.code]||p.pengecohMap[parseInt(d.code)]; if(!o2||!o2.length) return ''; let sorted=[...o2].sort((a,b)=>String(a.opt).localeCompare(String(b.opt),undefined,{numeric:true})); return sorted.map(o=>o.opt+':'+(o.ptma!==null?o.ptma.toFixed(2):'—')+(o.score_val===1?' ✓':'')).join(' | '); })(),
-      'Pengecoh > Kunci': probStr,
-      'Status Fit'      : d.fit,
+      'Kunci Jawaban'     : d.kunci !== null ? d.kunci : '',
+      'PTMA CORR Pilihan' : ptmaCorr,
+      'Pengecoh > Kunci'  : probStr,
+      'Status Fit'        : d.fit,
+      'Kualitas Soal'     : d.kualitas,
     };
   });
 }
 
-function downloadCSV() {
-  const rows = getTableRows();
-  if (!rows.length) return;
-  const headers = Object.keys(rows[0]);
-  const esc = v => '"' + String(v).replace(/"/g, '""') + '"';
-  const csv = [headers.map(esc).join(','), ...rows.map(r => headers.map(h => esc(r[h])).join(','))].join('\n');
-  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = (pakets[activeTab]?.label || 'paket') + '_detail_item.csv';
-  a.click();
+// Legacy — used internally if needed for filtered view
+function getTableRows() {
+  const p = pakets[activeTab];
+  return buildRowsForPaket(p);
 }
 
+// ── Download CSV: satu file per paket, semua paket ──
+function downloadCSV() {
+  const aktivePakets = pakets.filter(p => p && p.items && p.items.length);
+  if (!aktivePakets.length) return;
+  const esc = v => '"' + String(v).replace(/"/g, '""') + '"';
+
+  if (aktivePakets.length === 1) {
+    // Single paket — download langsung
+    const rows = buildRowsForPaket(aktivePakets[0]);
+    const headers = Object.keys(rows[0]);
+    const csv = [headers.map(esc).join(','), ...rows.map(r => headers.map(h => esc(r[h])).join(','))].join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
+    a.download = (aktivePakets[0].label||'Paket_1') + '_detail_item.csv';
+    a.click();
+  } else {
+    // Multi paket — download satu per satu berselang 400ms
+    aktivePakets.forEach((p, i) => {
+      setTimeout(() => {
+        const rows = buildRowsForPaket(p);
+        const headers = Object.keys(rows[0]);
+        const csv = [headers.map(esc).join(','), ...rows.map(r => headers.map(h => esc(r[h])).join(','))].join('\n');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
+        a.download = (p.label||('Paket_'+(i+1))) + '_detail_item.csv';
+        a.click();
+      }, i * 400);
+    });
+  }
+}
+
+// ── Download Excel: SATU file, tiap paket = 1 sheet ──
 function downloadExcel() {
-  const rows = getTableRows();
-  if (!rows.length) return;
-  const headers = Object.keys(rows[0]);
-  // Build HTML table that Excel can open
-  let html = '<html><head><meta charset="UTF-8"></head><body><table><thead><tr>';
-  headers.forEach(h => { html += `<th style="background:#1c2030;color:#e8ecf4;font-weight:bold">${h}</th>`; });
-  html += '</tr></thead><tbody>';
-  rows.forEach(r => {
-    html += '<tr>';
-    headers.forEach(h => { html += `<td>${r[h]}</td>`; });
-    html += '</tr>';
+  const aktivePakets = pakets.filter(p => p && p.items && p.items.length);
+  if (!aktivePakets.length) return;
+
+  const wb = XLSX.utils.book_new();
+
+  // Header style helper (SheetJS CE supports limited styling via !cols / !rows)
+  const COLS = [
+    {wch:5},{wch:12},{wch:9},{wch:11},{wch:12},
+    {wch:9},{wch:10},{wch:13},{wch:20},{wch:7},
+    {wch:28},{wch:20},{wch:12},{wch:16}
+  ];
+
+  aktivePakets.forEach((p, i) => {
+    const rows = buildRowsForPaket(p);
+    if (!rows.length) return;
+
+    // Build aoa (array of arrays) — header + data rows
+    const headers = Object.keys(rows[0]);
+    const aoa = [
+      headers, // header row
+      ...rows.map(r => headers.map(h => r[h]))
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = COLS;
+
+    // Freeze top row
+    ws['!freeze'] = {xSplit:0, ySplit:1, topLeftCell:'A2', activePane:'bottomLeft', state:'frozen'};
+
+    // Sheet name: maks 31 char (Excel limit)
+    const sheetName = (p.label || ('Paket '+(i+1))).substring(0, 31);
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
   });
-  html += '</tbody></table></body></html>';
-  const blob = new Blob([html], {type: 'application/vnd.ms-excel;charset=utf-8;'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = (pakets[activeTab]?.label || 'paket') + '_detail_item.xls';
-  a.click();
+
+  // Tambah sheet Ringkasan jika > 1 paket
+  if (aktivePakets.length > 1) {
+    const ringkasanData = [
+      ['Paket', 'Jumlah Soal', 'Sempurna', 'Sangat Baik', 'Baik', 'Tdk Dpt Mbedakan', 'Butuh Pemeriksaan', 'Fit Baik', 'Misfit', 'Soal Bagus', 'Soal Tidak Bagus', '% Minimal Baik'],
+    ];
+    aktivePakets.forEach((p, i) => {
+      const c = {'Sempurna':0,'Sangat Baik':0,'Baik':0,'Tidak Dapat Membedakan':0,'Butuh Pemeriksaan':0};
+      const f = {'Fit Baik':0,'Misfit':0};
+      const q = {'Soal Bagus':0,'Soal Tidak Bagus':0};
+      p.items.forEach(d => {
+        if(c[d.dayaBeda]!==undefined) c[d.dayaBeda]++;
+        if(f[d.fit]!==undefined) f[d.fit]++;
+        if(q[d.kualitas]!==undefined) q[d.kualitas]++;
+      });
+      const total = p.items.length;
+      const baik = c['Sempurna']+c['Sangat Baik']+c['Baik'];
+      const pct = total > 0 ? parseFloat((baik/total*100).toFixed(1)) : 0;
+      ringkasanData.push([
+        p.label||('Paket '+(i+1)), total,
+        c['Sempurna'], c['Sangat Baik'], c['Baik'],
+        c['Tidak Dapat Membedakan'], c['Butuh Pemeriksaan'],
+        f['Fit Baik'], f['Misfit'],
+        q['Soal Bagus'], q['Soal Tidak Bagus'], pct
+      ]);
+    });
+    const wsR = XLSX.utils.aoa_to_sheet(ringkasanData);
+    wsR['!cols'] = [{wch:20},{wch:12},{wch:10},{wch:12},{wch:8},{wch:18},{wch:18},{wch:10},{wch:8},{wch:12},{wch:16},{wch:14}];
+    XLSX.utils.book_append_sheet(wb, wsR, 'Ringkasan');
+  }
+
+  const filename = aktivePakets.length > 1
+    ? 'Analisis_MultiPaket_' + aktivePakets.length + 'Paket.xlsx'
+    : (aktivePakets[0].label||'Paket_1') + '_detail_item.xlsx';
+
+  XLSX.writeFile(wb, filename);
 }
 
 // INIT
